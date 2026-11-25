@@ -5,6 +5,7 @@
     <!-- No backup: the auth token is encrypted with a Keystore key that never
          leaves the device, so a restored copy couldn't be decrypted anyway. -->
     <application
+        android:name=".TareasApp"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="false"
