@@ -14,6 +14,9 @@ interface TodoDao {
     @Query("SELECT * FROM todos")
     suspend fun getAll(): List<TodoEntity>
 
+    @Query("SELECT * FROM todos WHERE localId = :localId")
+    suspend fun get(localId: String): TodoEntity?
+
     /** The push queue, in stable sync order (PLAN.md §5). */
     @Query("SELECT * FROM todos WHERE pendingOp != 'NONE' ORDER BY createdAtEpochMs, localId")
     suspend fun pending(): List<TodoEntity>

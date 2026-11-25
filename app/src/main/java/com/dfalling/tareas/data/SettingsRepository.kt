@@ -45,6 +45,15 @@ class SettingsRepository(
     suspend fun token(): String? =
         context.dataStore.data.first()[Keys.token]?.let { encrypted -> TokenCipher.decrypt(encrypted) }
 
+    /** (serverUrl, token) for the sync engine; null when logged out or undecryptable. */
+    suspend fun credentials(): Pair<String, String>? {
+        val prefs = context.dataStore.data.first()
+        val serverUrl = prefs[Keys.serverUrl] ?: return null
+        return prefs[Keys.token]
+            ?.let { encrypted -> TokenCipher.decrypt(encrypted) }
+            ?.let { token -> serverUrl to token }
+    }
+
     /** Stores a successful login. lastSyncedAt is untouched: a 401 re-login keeps history. */
     suspend fun saveLogin(serverUrl: String, email: String, token: String) {
         context.dataStore.edit { prefs ->

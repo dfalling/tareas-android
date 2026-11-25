@@ -65,11 +65,39 @@ fun buildPatchBody(todo: TodoEntity, fields: Collection<String> = todo.pendingFi
     }
 
 /**
+ * The four todo endpoints the sync engine drives, as an interface so tests can
+ * swap in a scripted fake. `TareasApi` is the real implementation.
+ */
+interface TodoApi {
+    /** GET /todos?includeCompleted=true — the full list the sync pull merges. */
+    suspend fun listTodos(serverUrl: String, token: String): List<TodoJson>
+
+    /** POST /todos → 201 + the created todo. */
+    suspend fun createTodo(
+        serverUrl: String,
+        token: String,
+        title: String,
+        notes: String?,
+        dueDate: LocalDate?,
+    ): TodoJson
+
+    /** PATCH /todos/{id} with exactly [body]'s fields (absent = untouched, null = clear). */
+    suspend fun patchTodo(serverUrl: String, token: String, id: Long, body: JsonObject): TodoJson
+
+    /**
+     * DELETE /todos/{id}. Deleting is idempotent from the sync engine's point of
+     * view: impls treat 404 as deleted (the server hard-deletes immediately, incl.
+     * the auto-delete purge) and only surface other failures.
+     */
+    suspend fun deleteTodo(serverUrl: String, token: String, id: Long)
+}
+
+/**
  * Hand-rolled client for the six tareas /api/v1 endpoints (PLAN.md Appendix A).
  * Auth is a per-call bearer token because the server URL and token live in
  * [SettingsRepository] and change across logins.
  */
-class TareasApi(httpClient: OkHttpClient? = null) {
+class TareasApi(httpClient: OkHttpClient? = null) : TodoApi {
     private val http =
         httpClient
             ?: OkHttpClient.Builder()
@@ -105,7 +133,7 @@ class TareasApi(httpClient: OkHttpClient? = null) {
     }
 
     /** GET /todos?includeCompleted=true — the full list the sync pull merges. */
-    suspend fun listTodos(serverUrl: String, token: String): List<TodoJson> {
+    override suspend fun listTodos(serverUrl: String, token: String): List<TodoJson> {
         val request =
             Request.Builder()
                 .url(url(serverUrl, "todos") + "?includeCompleted=true")
@@ -116,7 +144,7 @@ class TareasApi(httpClient: OkHttpClient? = null) {
     }
 
     /** POST /todos → 201 + the created todo (absent notes/due_date = "not provided"). */
-    suspend fun createTodo(
+    override suspend fun createTodo(
         serverUrl: String,
         token: String,
         title: String,
@@ -138,7 +166,7 @@ class TareasApi(httpClient: OkHttpClient? = null) {
     }
 
     /** PATCH /todos/{id} with exactly [body]'s fields (absent = untouched, null = clear). */
-    suspend fun patchTodo(serverUrl: String, token: String, id: Long, body: JsonObject): TodoJson {
+    override suspend fun patchTodo(serverUrl: String, token: String, id: Long, body: JsonObject): TodoJson {
         val request =
             Request.Builder()
                 .url(url(serverUrl, "todos/$id"))
@@ -152,7 +180,7 @@ class TareasApi(httpClient: OkHttpClient? = null) {
      * DELETE /todos/{id}. Deletion is idempotent from our side: 404 counts as
      * deleted (the server hard-deletes immediately, incl. the auto-delete purge).
      */
-    suspend fun deleteTodo(serverUrl: String, token: String, id: Long) {
+    override suspend fun deleteTodo(serverUrl: String, token: String, id: Long) {
         val request =
             Request.Builder()
                 .url(url(serverUrl, "todos/$id"))

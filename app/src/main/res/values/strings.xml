@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">Tareas</string>
+
+    <!-- Sync state / errors (top bar line until the full UI lands in Phase 4). -->
+    <string name="sync_state_idle">Synced</string>
+    <string name="sync_state_syncing">Syncing…</string>
+    <string name="sync_state_needs_auth">Signed out — please log in again</string>
+    <string name="sync_error_network">Can\'t reach the server — will retry when online</string>
+    <string name="sync_error_server">Server error: %1$s</string>
+    <string name="sync_error_validation">Change rejected: %1$s</string>
+
+    <!-- Login errors (minimal screen; full error mapping lands in Phase 4). -->
+    <string name="login_error_credentials">Wrong email or password</string>
+    <string name="login_error_rate_limited">Too many attempts — wait a few minutes</string>
+    <string name="login_error_network">Can\'t reach the server</string>
+    <string name="login_error_failed">Sign-in failed: %1$s</string>
 </resources>
