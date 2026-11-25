@@ -1,17 +1,69 @@
 <resources>
     <string name="app_name">Tareas</string>
 
-    <!-- Sync state / errors (top bar line until the full UI lands in Phase 4). -->
-    <string name="sync_state_idle">Synced</string>
+    <!-- Sync state (top bar subtitle). -->
     <string name="sync_state_syncing">Syncing…</string>
     <string name="sync_state_needs_auth">Signed out — please log in again</string>
     <string name="sync_error_network">Can\'t reach the server — will retry when online</string>
     <string name="sync_error_server">Server error: %1$s</string>
     <string name="sync_error_validation">Change rejected: %1$s</string>
 
-    <!-- Login errors (minimal screen; full error mapping lands in Phase 4). -->
+    <!-- Last-synced relative text, ticked every 30 s. -->
+    <string name="sync_never">Not synced yet</string>
+    <string name="sync_just_now">Synced just now</string>
+    <string name="sync_minutes_ago">Synced %1$dm ago</string>
+    <string name="sync_hours_ago">Synced %1$dh ago</string>
+    <string name="sync_days_ago">Synced %1$dd ago</string>
+    <string name="sync_on_date">Synced %1$s</string>
+
+    <!-- Login. -->
+    <string name="field_server_url">Server URL</string>
+    <string name="field_email">Email</string>
+    <string name="field_password">Password</string>
+    <string name="toggle_password">Show or hide password</string>
+    <string name="sign_in">Sign in</string>
     <string name="login_error_credentials">Wrong email or password</string>
     <string name="login_error_rate_limited">Too many attempts — wait a few minutes</string>
     <string name="login_error_network">Can\'t reach the server</string>
     <string name="login_error_failed">Sign-in failed: %1$s</string>
+
+    <!-- Tabs. -->
+    <string name="tab_today">Today</string>
+    <string name="tab_upcoming">Upcoming</string>
+    <string name="tab_unscheduled">Unscheduled</string>
+    <string name="tab_completed">Completed</string>
+
+    <!-- Empty states. -->
+    <string name="empty_today">Nothing due today\nEnjoy the calm.</string>
+    <string name="empty_upcoming">Nothing scheduled ahead</string>
+    <string name="empty_unscheduled">No todos without a date</string>
+    <string name="empty_completed">Nothing completed yet</string>
+
+    <!-- Todo rows. -->
+    <string name="overdue_label">overdue · %1$s</string>
+    <string name="pending_sync">Waiting to sync</string>
+    <string name="toggle_complete">Mark as complete or reopen</string>
+
+    <!-- Todo sheet (create / edit). -->
+    <string name="sheet_create_title">New todo</string>
+    <string name="todo_title">Title</string>
+    <string name="todo_notes">Notes</string>
+    <string name="due_date">Due date</string>
+    <string name="due_date_none">No due date</string>
+    <string name="due_date_clear">Clear due date</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="mark_complete">Mark complete</string>
+    <string name="mark_reopen">Reopen</string>
+    <string name="delete">Delete</string>
+    <string name="delete_confirm_title">Delete permanently?</string>
+    <string name="delete_confirm_text">“%1$s” is removed on this device and on the server. This can\'t be undone.</string>
+    <string name="deleted_todo">Deleted “%1$s”</string>
+
+    <!-- Account sheet. -->
+    <string name="account">Account</string>
+    <string name="account_server">Server</string>
+    <string name="log_out">Log out</string>
+    <string name="version">Version</string>
 </resources>
