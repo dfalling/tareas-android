@@ -41,7 +41,7 @@ class MainViewModel(
     private val dao: TodoDao,
     private val todosRepo: TodoRepository,
     private val api: TareasApi,
-    val sync: SyncCoordinator,
+    private val sync: SyncCoordinator,
 ) : ViewModel() {
     val settings: StateFlow<Settings?> =
         settingsRepo.settings.stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -70,22 +70,26 @@ class MainViewModel(
      * the API's error surface (Appendix A): 401 bad credentials, 429 rate limit
      * (10 attempts / 5 min), IOException unreachable server.
      */
-    suspend fun signIn(serverUrl: String, email: String, password: String): UiText? =
+    suspend fun signIn(serverUrl: String, email: String, password: String): UiText? {
+        signingIn = true
         try {
             val token = api.login(serverUrl, email, password)
             settingsRepo.saveLogin(serverUrl, email, token)
             sync.requestSync()
-            null
+            return null
         } catch (e: ApiException.Unauthorized) {
-            UiText(R.string.login_error_credentials)
+            return UiText(R.string.login_error_credentials)
         } catch (e: ApiException.Validation) {
-            UiText(R.string.login_error_failed, e.message ?: "rejected")
+            return UiText(R.string.login_error_failed, e.message ?: "rejected")
         } catch (e: ApiException.HttpError) {
-            if (e.code == 429) UiText(R.string.login_error_rate_limited)
+            return if (e.code == 429) UiText(R.string.login_error_rate_limited)
             else UiText(R.string.login_error_failed, e.message ?: "request failed")
         } catch (e: IOException) {
-            UiText(R.string.login_error_network)
+            return UiText(R.string.login_error_network)
+        } finally {
+            signingIn = false
         }
+    }
 
     /**
      * Revokes the token on the server (best-effort — a failed revoke must not

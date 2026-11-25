@@ -1,7 +1,6 @@
 package com.dfalling.tareas.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,6 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -50,6 +51,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dfalling.tareas.R
 import com.dfalling.tareas.data.TodoEntity
+import com.dfalling.tareas.domain.DayGroup
 import com.dfalling.tareas.domain.Tab
 import com.dfalling.tareas.domain.Tabs
 import com.dfalling.tareas.sync.SyncState
@@ -106,6 +108,7 @@ fun MainScreen(viewModel: MainViewModel) {
     var editing by remember { mutableStateOf<TodoEntity?>(null) }
     var creating by remember { mutableStateOf(false) }
     var showAccount by remember { mutableStateOf(false) }
+    val syncingDescription = stringResource(R.string.sync_state_syncing)
 
     Scaffold(
         topBar = {
@@ -125,10 +128,15 @@ fun MainScreen(viewModel: MainViewModel) {
                 },
                 actions = {
                     if (syncState is SyncState.Syncing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.padding(end = 12.dp).size(16.dp),
-                            strokeWidth = 2.dp,
-                        )
+                        // Tiny top-bar spinner; the subtitle keeps the synced age.
+                        Box(
+                            modifier =
+                                Modifier
+                                    .padding(end = 12.dp)
+                                    .semantics { contentDescription = syncingDescription },
+                        ) {
+                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                        }
                     }
                     IconButton(onClick = { showAccount = true }) {
                         Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.account))
@@ -214,14 +222,15 @@ fun MainScreen(viewModel: MainViewModel) {
     }
 }
 
-/** Subtitle under the app name: the sync state, or the relative last-synced age. */
+/** Subtitle under the app name. The relative synced age stays put while the
+ * spinner runs (the spinner IS the syncing signal); errors and sign-outs take
+ * over the line so they're never missed. */
 @Composable
 private fun subtitleText(state: SyncState, lastSyncedAt: Long?, tick: Long): String =
     when (state) {
-        SyncState.Syncing -> stringResource(R.string.sync_state_syncing)
         is SyncState.Error -> state.reason.asString()
         SyncState.NeedsAuth -> stringResource(R.string.sync_state_needs_auth)
-        SyncState.Idle -> syncAgeText(lastSyncedAt, tick).asString()
+        SyncState.Idle, SyncState.Syncing -> syncAgeText(lastSyncedAt, tick).asString()
     }
 
 @Composable
@@ -254,61 +263,23 @@ private fun TodoList(
     onOpen: (TodoEntity) -> Unit,
     onToggleComplete: (TodoEntity) -> Unit,
 ) {
-    if (items.isEmpty()) {
-        EmptyState(emptyRes)
-        return
-    }
+    // Always a LazyColumn, empty state included: PullToRefreshBox pulls via the
+    // nested scroll of a scrollable child, so a plain centered Box on empty
+    // tabs would swallow nothing but also never trigger a refresh.
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
     ) {
-        items(items, key = { it.localId }) { todo ->
-            TodoRow(
-                todo = todo,
-                today = today,
-                showDue = showDue,
-                onToggleComplete = { onToggleComplete(todo) },
-                onOpen = { onOpen(todo) },
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun UpcomingList(
-    groups: List<com.dfalling.tareas.domain.DayGroup>,
-    today: LocalDate,
-    onOpen: (TodoEntity) -> Unit,
-    onToggleComplete: (TodoEntity) -> Unit,
-) {
-    if (groups.isEmpty()) {
-        EmptyState(R.string.empty_upcoming)
-        return
-    }
-    val locale = LocalConfiguration.current.locales[0]
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-    ) {
-        groups.forEach { group ->
-            stickyHeader(key = group.date.toEpochDay()) {
-                Text(
-                    text = Tabs.headerLabel(group.date, today, locale),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                )
+        if (items.isEmpty()) {
+            item(key = "empty") {
+                EmptyState(emptyRes, Modifier.fillParentMaxSize())
             }
-            items(group.todos, key = { it.localId }) { todo ->
-                // The day header already carries the date — no per-row chip.
+        } else {
+            items(items, key = { it.localId }) { todo ->
                 TodoRow(
                     todo = todo,
                     today = today,
-                    showDue = false,
+                    showDue = showDue,
                     onToggleComplete = { onToggleComplete(todo) },
                     onOpen = { onOpen(todo) },
                 )
@@ -317,9 +288,54 @@ private fun UpcomingList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun EmptyState(messageRes: Int) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+private fun UpcomingList(
+    groups: List<DayGroup>,
+    today: LocalDate,
+    onOpen: (TodoEntity) -> Unit,
+    onToggleComplete: (TodoEntity) -> Unit,
+) {
+    val locale = LocalConfiguration.current.locales[0]
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        if (groups.isEmpty()) {
+            item(key = "empty") {
+                EmptyState(R.string.empty_upcoming, Modifier.fillParentMaxSize())
+            }
+        } else {
+            groups.forEach { group ->
+                stickyHeader(key = group.date.toEpochDay()) {
+                    Text(
+                        text = Tabs.headerLabel(group.date, today, locale),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                    )
+                }
+                items(group.todos, key = { it.localId }) { todo ->
+                    // The day header already carries the date — no per-row chip.
+                    TodoRow(
+                        todo = todo,
+                        today = today,
+                        showDue = false,
+                        onToggleComplete = { onToggleComplete(todo) },
+                        onOpen = { onOpen(todo) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyState(messageRes: Int, modifier: Modifier = Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Text(
             text = stringResource(messageRes),
             style = MaterialTheme.typography.bodyLarge,

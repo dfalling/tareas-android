@@ -63,7 +63,6 @@
 
     <!-- Account sheet. -->
     <string name="account">Account</string>
-    <string name="account_server">Server</string>
     <string name="log_out">Log out</string>
     <string name="version">Version</string>
 </resources>

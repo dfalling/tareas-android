@@ -51,12 +51,7 @@ fun AccountSheet(
             )
             ListItem(
                 headlineContent = { Text(settings.email ?: "") },
-                supportingContent = {
-                    Text(
-                        text =
-                            settings.serverUrl?.ifBlank { null } ?: stringResource(R.string.account_server),
-                    )
-                },
+                supportingContent = { settings.serverUrl?.let { Text(it) } },
                 leadingContent = { Icon(Icons.Filled.Person, contentDescription = null) },
             )
             ListItem(
