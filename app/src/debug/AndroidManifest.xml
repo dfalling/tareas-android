@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Debug builds may talk to a plain-HTTP tareas server on the LAN or emulator
+         host (http://10.0.2.2:8080). Release builds stay HTTPS-only. -->
+    <application android:usesCleartextTraffic="true" />
+</manifest>
