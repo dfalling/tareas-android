@@ -152,10 +152,12 @@ class SyncIntegrationTest {
         assertEquals(parseApiTimestamp(remote.completedAt!!), synced.completedAtEpochMs)
         assertNotEquals(0L, lastSyncedAt)
 
-        // And a queued delete leaves no trace on the server after a cycle.
+        // And a queued delete leaves no trace after a cycle: the row is gone
+        // locally and the server never heard of it again. (The pull itself
+        // re-imports whatever else the shared server holds — that's by design.)
         repository.delete(created.localId)
         coordinator.runNow()
-        assertTrue(dao.rows.isEmpty())
+        assertFalse(dao.rows.containsKey(created.localId))
         assertTrue(api.listTodos(baseUrl, tok).none { it.title.startsWith(title) })
     }
 }
