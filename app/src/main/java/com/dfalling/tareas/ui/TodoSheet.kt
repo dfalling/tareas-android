@@ -49,8 +49,8 @@ import java.time.format.DateTimeFormatter
 private val displayDate = DateTimeFormatter.ofPattern("dd-MM-yy")
 
 /** Server limits (Appendix A), enforced while typing by rune (code point), not UTF-16 unit. */
-private const val MAX_TITLE_RUNES = 500
-private const val MAX_NOTES_RUNES = 10_000
+internal const val MAX_TITLE_RUNES = 500
+internal const val MAX_NOTES_RUNES = 10_000
 
 /** Cuts a string to at most [max] code points. */
 internal fun takeRunes(text: String, max: Int): String =
@@ -71,20 +71,26 @@ private fun Long.toPickerDate(): LocalDate =
  * Material3 date picker. Saves are optimistic — they land in Room first and
  * the sync engine carries them over. In edit mode it also offers the complete
  * toggle and delete (with the "this is permanent, here and on the server"
- * confirmation the plan asks for).
+ * confirmation the plan asks for). A share intent opens this sheet in create
+ * mode with the intent's content passed as [prefillTitle]/[prefillNotes].
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoSheet(
     initial: TodoEntity?,
+    prefillTitle: String = "",
+    prefillNotes: String? = null,
     onDismiss: () -> Unit,
     onSave: (title: String, notes: String?, dueDate: LocalDate?) -> Unit,
     onToggleComplete: ((completed: Boolean) -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
 ) {
     val editing = initial != null
-    var title by remember { mutableStateOf(initial?.title ?: "") }
-    var notes by remember { mutableStateOf(initial?.notes ?: "") }
+    // prefill* is the share-target path (create mode, initial == null): the
+    // intent's subject/text. The remember keys make a share that lands while
+    // the sheet is already open replace the fields.
+    var title by remember(prefillTitle) { mutableStateOf(initial?.title ?: prefillTitle) }
+    var notes by remember(prefillNotes) { mutableStateOf(initial?.notes ?: prefillNotes ?: "") }
     var dueDate by remember { mutableStateOf(initial?.dueDate) }
     var completed by remember { mutableStateOf(initial?.completed ?: false) }
     var showDatePicker by remember { mutableStateOf(false) }

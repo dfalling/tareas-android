@@ -1,5 +1,6 @@
 package com.dfalling.tareas
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,12 +12,17 @@ import com.dfalling.tareas.sync.SyncState
 import com.dfalling.tareas.ui.LoginScreen
 import com.dfalling.tareas.ui.MainScreen
 import com.dfalling.tareas.ui.MainViewModel
+import com.dfalling.tareas.ui.ShareDraft
 import com.dfalling.tareas.ui.theme.TareasTheme
 
 /**
  * Two screens, no navigation library (PLAN.md §3): the login screen shows while
  * there is no token (fresh install, logout) or the sync engine reported a 401;
  * otherwise the main tabbed list.
+ *
+ * Also the share target (Phase 5): ACTION_SEND text/plain opens a prefilled
+ * create sheet. With `singleTask`, a share while the app is alive arrives via
+ * [onNewIntent]; a share from a dead app starts [onCreate] with the intent.
  */
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels { MainViewModel.Factory }
@@ -24,6 +30,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        handleShareIntent(intent)
         setContent {
             TareasTheme {
                 val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -37,5 +44,24 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleShareIntent(intent)
+    }
+
+    /**
+     * Everything except ACTION_SEND text/plain (launcher relaunch, etc.) is
+     * ignored. EXTRA_SUBJECT/EXTRA_TEXT are read as CharSequence — some senders
+     * put Spanned text there, which getStringExtra would silently drop.
+     */
+    private fun handleShareIntent(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_SEND) return
+        val type = intent.type
+        if (type == null || !type.equals("text/plain", ignoreCase = true)) return
+        val subject = intent.getCharSequenceExtra(Intent.EXTRA_SUBJECT)?.toString()
+        val text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()
+        ShareDraft.from(subject, text)?.let(viewModel::onShareReceived)
     }
 }

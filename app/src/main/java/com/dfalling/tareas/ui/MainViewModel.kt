@@ -24,8 +24,10 @@ import com.dfalling.tareas.sync.SyncState
 import java.io.IOException
 import java.time.LocalDate
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -56,6 +58,25 @@ class MainViewModel(
             .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val syncState: StateFlow<SyncState> = sync.state
+
+    /**
+     * Prefill contributed by a share intent (Phase 5), held until its sheet is
+     * saved or dismissed — including across a login screen (a share on a fresh
+     * install opens the sheet right after signing in). A newer share replaces
+     * a draft the user hasn't acted on yet.
+     */
+    private val _pendingShare = MutableStateFlow<ShareDraft?>(null)
+    val pendingShare: StateFlow<ShareDraft?> = _pendingShare.asStateFlow()
+
+    /** Called by [com.dfalling.tareas.MainActivity] for ACTION_SEND text/plain. */
+    fun onShareReceived(draft: ShareDraft) {
+        _pendingShare.value = draft
+    }
+
+    /** Clears the share prefill once its sheet has been saved or dismissed. */
+    fun consumeShare() {
+        _pendingShare.value = null
+    }
 
     private val _messages = Channel<UiText>(Channel.BUFFERED)
     val messages = _messages.receiveAsFlow()

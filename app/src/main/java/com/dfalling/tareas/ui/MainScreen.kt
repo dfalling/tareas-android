@@ -105,9 +105,13 @@ fun MainScreen(viewModel: MainViewModel) {
     }
 
     // null = no sheet; a TodoEntity = editing it; CREATE = composing a new one.
+    // A pending share (Phase 5) also opens the create sheet, prefilled from the
+    // intent; it's cleared once that sheet is saved or dismissed.
     var editing by remember { mutableStateOf<TodoEntity?>(null) }
     var creating by remember { mutableStateOf(false) }
     var showAccount by remember { mutableStateOf(false) }
+    val pendingShare by viewModel.pendingShare.collectAsStateWithLifecycle()
+    val share = pendingShare
     val syncingDescription = stringResource(R.string.sync_state_syncing)
 
     Scaffold(
@@ -180,12 +184,18 @@ fun MainScreen(viewModel: MainViewModel) {
         }
     }
 
-    if (creating) {
+    if (creating || share != null) {
         TodoSheet(
             initial = null,
-            onDismiss = { creating = false },
+            prefillTitle = share?.title.orEmpty(),
+            prefillNotes = share?.notes,
+            onDismiss = {
+                creating = false
+                if (share != null) viewModel.consumeShare()
+            },
             onSave = { title, notes, dueDate ->
                 creating = false
+                if (share != null) viewModel.consumeShare()
                 viewModel.create(title, notes, dueDate)
             },
         )
