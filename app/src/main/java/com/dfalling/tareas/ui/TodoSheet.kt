@@ -131,7 +131,10 @@ fun TodoSheet(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedButton(onClick = { showDatePicker = true }) {
-                    Icon(Icons.Filled.DateRange, contentDescription = null)
+                    Icon(
+                        Icons.Filled.DateRange,
+                        contentDescription = stringResource(R.string.due_date),
+                    )
                     Spacer(Modifier.padding(start = 6.dp))
                     Text(
                         text =

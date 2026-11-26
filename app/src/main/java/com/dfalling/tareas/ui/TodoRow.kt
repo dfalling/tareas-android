@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,7 @@ fun TodoRow(
     modifier: Modifier = Modifier,
 ) {
     val overdue = Tabs.isOverdue(todo, today)
+    val toggleComplete = stringResource(R.string.toggle_complete)
     Row(
         modifier =
             modifier
@@ -55,7 +58,10 @@ fun TodoRow(
         Checkbox(
             checked = todo.completed,
             onCheckedChange = { onToggleComplete() },
-            modifier = Modifier.padding(end = 4.dp),
+            modifier =
+                Modifier
+                    .padding(end = 4.dp)
+                    .semantics { contentDescription = toggleComplete },
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(

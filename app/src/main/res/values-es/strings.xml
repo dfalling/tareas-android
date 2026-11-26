@@ -1,0 +1,68 @@
+<resources>
+    <string name="app_name">Tareas</string>
+
+    <!-- Sync state (top bar subtitle). -->
+    <string name="sync_state_syncing">Sincronizando…</string>
+    <string name="sync_state_needs_auth">Sesión cerrada — vuelve a iniciar sesión</string>
+    <string name="sync_error_network">No se puede contactar con el servidor — se reintentará al recuperar la conexión</string>
+    <string name="sync_error_server">Error del servidor: %1$s</string>
+    <string name="sync_error_validation">Cambio rechazado: %1$s</string>
+
+    <!-- Last-synced relative text, ticked every 30 s. -->
+    <string name="sync_never">Todavía sin sincronizar</string>
+    <string name="sync_just_now">Sincronizado ahora mismo</string>
+    <string name="sync_minutes_ago">Sincronizado hace %1$d min</string>
+    <string name="sync_hours_ago">Sincronizado hace %1$d h</string>
+    <string name="sync_days_ago">Sincronizado hace %1$d d</string>
+    <string name="sync_on_date">Sincronizado el %1$s</string>
+
+    <!-- Login. -->
+    <string name="field_server_url">URL del servidor</string>
+    <string name="field_email">Correo electrónico</string>
+    <string name="field_password">Contraseña</string>
+    <string name="toggle_password">Mostrar u ocultar la contraseña</string>
+    <string name="sign_in">Iniciar sesión</string>
+    <string name="login_error_credentials">Correo o contraseña incorrectos</string>
+    <string name="login_error_rate_limited">Demasiados intentos — espera unos minutos</string>
+    <string name="login_error_network">No se puede contactar con el servidor</string>
+    <string name="login_error_failed">Error al iniciar sesión: %1$s</string>
+
+    <!-- Tabs. -->
+    <string name="tab_today">Hoy</string>
+    <string name="tab_upcoming">Próximas</string>
+    <string name="tab_unscheduled">Sin fecha</string>
+    <string name="tab_completed">Hechas</string>
+
+    <!-- Empty states. -->
+    <string name="empty_today">Nada para hoy\nDisfruta de la calma.</string>
+    <string name="empty_upcoming">Nada programado para más adelante</string>
+    <string name="empty_unscheduled">Ninguna tarea sin fecha</string>
+    <string name="empty_completed">Todavía no hay tareas hechas</string>
+
+    <!-- Todo rows. -->
+    <string name="overdue_label">atrasada · %1$s</string>
+    <string name="pending_sync">Pendiente de sincronizar</string>
+    <string name="toggle_complete">Marcar como completada o reabrir</string>
+
+    <!-- Todo sheet (create / edit). -->
+    <string name="sheet_create_title">Nueva tarea</string>
+    <string name="todo_title">Título</string>
+    <string name="todo_notes">Notas</string>
+    <string name="due_date">Fecha límite</string>
+    <string name="due_date_none">Sin fecha</string>
+    <string name="due_date_clear">Quitar fecha</string>
+    <string name="dialog_ok">Aceptar</string>
+    <string name="dialog_cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+    <string name="mark_complete">Marcar como completada</string>
+    <string name="mark_reopen">Reabrir</string>
+    <string name="delete">Eliminar</string>
+    <string name="delete_confirm_title">¿Eliminar definitivamente?</string>
+    <string name="delete_confirm_text">«%1$s» se elimina en este dispositivo y en el servidor. No se puede deshacer.</string>
+    <string name="deleted_todo">Se eliminó «%1$s»</string>
+
+    <!-- Account sheet. -->
+    <string name="account">Cuenta</string>
+    <string name="log_out">Salir</string>
+    <string name="version">Versión</string>
+</resources>
