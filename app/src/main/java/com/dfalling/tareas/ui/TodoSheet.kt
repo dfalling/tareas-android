@@ -28,13 +28,19 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.foundation.text.KeyboardOptions
@@ -45,6 +51,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.flow.first
 
 private val displayDate = DateTimeFormatter.ofPattern("dd-MM-yy")
 
@@ -73,6 +80,10 @@ private fun Long.toPickerDate(): LocalDate =
  * toggle and delete (with the "this is permanent, here and on the server"
  * confirmation the plan asks for). A share intent opens this sheet in create
  * mode with the intent's content passed as [prefillTitle]/[prefillNotes].
+ *
+ * Create mode focuses the title and raises the keyboard once the sheet has
+ * finished animating in; edit mode never steals focus, so tapping an existing
+ * todo doesn't pop the keyboard.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,8 +106,23 @@ fun TodoSheet(
     var completed by remember { mutableStateOf(initial?.completed ?: false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val titleFocusRequester = remember { FocusRequester() }
+    val sheetState = rememberModalBottomSheetState()
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    if (!editing) {
+        LaunchedEffect(Unit) {
+            // Wait for the sheet to settle before grabbing focus: issuing it
+            // during the entrance animation loses the keyboard (the IME show
+            // races the popup window attach), and isVisible only flips once
+            // the show animation has finished.
+            snapshotFlow { sheetState.isVisible }.first { it }
+            titleFocusRequester.requestFocus()
+            keyboard?.show()
+        }
+    }
+
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(
             modifier =
                 Modifier
@@ -117,7 +143,7 @@ fun TodoSheet(
                 label = { Text(stringResource(R.string.todo_title)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().focusRequester(titleFocusRequester),
             )
             OutlinedTextField(
                 value = notes,
