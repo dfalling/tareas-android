@@ -1,14 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Placeholder launcher glyph: a single check mark. Replaced in Phase 6. -->
+<!-- Launcher glyph: a simple check list — two items checked, one still open.
+     Strokes only, so the same drawable works as the monochrome (themed icon)
+     layer. Kept inside the 66 dp adaptive-icon safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- First row: checked. -->
     <path
-        android:pathData="M38,58 L50,70 L72,42"
+        android:pathData="M30,41 L37,48 L50,33"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="8"
+        android:strokeWidth="6"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
+    <path
+        android:pathData="M57,38 L78,38"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+    <!-- Second row: checked. -->
+    <path
+        android:pathData="M30,59 L37,66 L50,51"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M57,55 L78,55"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+    <!-- Third row: still open. -->
+    <path
+        android:pathData="M30,72 L52,72"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
 </vector>
