@@ -100,6 +100,8 @@ class MainViewModel(
             return null
         } catch (e: ApiException.Unauthorized) {
             return UiText(R.string.login_error_credentials)
+        } catch (e: ApiException.InvalidUrl) {
+            return UiText(R.string.login_error_invalid_url)
         } catch (e: ApiException.Validation) {
             return UiText(R.string.login_error_failed, e.message ?: "rejected")
         } catch (e: ApiException.HttpError) {

@@ -25,6 +25,7 @@
     <string name="login_error_credentials">Correo o contraseña incorrectos</string>
     <string name="login_error_rate_limited">Demasiados intentos — espera unos minutos</string>
     <string name="login_error_network">No se puede contactar con el servidor</string>
+    <string name="login_error_invalid_url">Revisa la URL del servidor — debe tener el aspecto de https://ejemplo.com</string>
     <string name="login_error_failed">Error al iniciar sesión: %1$s</string>
 
     <!-- Tabs. -->

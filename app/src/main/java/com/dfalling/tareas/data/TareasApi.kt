@@ -10,6 +10,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -22,6 +23,9 @@ sealed class ApiException(message: String) : Exception(message) {
 
     /** 422 — the server rejected a field value ("title is too long", ...). */
     class Validation(message: String) : ApiException(message)
+
+    /** The server URL doesn't parse (a login-form typo) — actionable locally, no server answer. */
+    class InvalidUrl(message: String) : ApiException(message)
 
     /** Any other non-2xx. 404 on PATCH means the server already hard-deleted the todo. */
     class HttpError(val code: Int, message: String) : ApiException("$code: $message") {
@@ -219,9 +223,18 @@ class TareasApi(httpClient: OkHttpClient? = null) : TodoApi {
             }
         }
 
-    /** Base URL + /api/v1/ + path, tolerating a trailing slash on the stored URL. */
-    private fun url(serverUrl: String, path: String): String =
-        "${serverUrl.trim().trimEnd('/')}/api/v1/$path"
+    /**
+     * Base URL + /api/v1/ + path, tolerating a trailing slash on the stored URL.
+     * Throws [ApiException.InvalidUrl] when the result doesn't parse — OkHttp's
+     * Request.Builder would otherwise throw a bare IllegalArgumentException that
+     * no error mapping catches (a login-form typo crashed the app: "Invalid URL
+     * port" from a URL like `https://host:8443https://`).
+     */
+    private fun url(serverUrl: String, path: String): String {
+        val full = "${serverUrl.trim().trimEnd('/')}/api/v1/$path"
+        full.toHttpUrlOrNull() ?: throw ApiException.InvalidUrl("invalid server URL: $full")
+        return full
+    }
 
     /** Pulls the server's {"error":"..."} message out of an error body. */
     private fun errorMessage(bodyText: String): String =

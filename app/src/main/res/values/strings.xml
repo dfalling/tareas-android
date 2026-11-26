@@ -25,6 +25,7 @@
     <string name="login_error_credentials">Wrong email or password</string>
     <string name="login_error_rate_limited">Too many attempts — wait a few minutes</string>
     <string name="login_error_network">Can\'t reach the server</string>
+    <string name="login_error_invalid_url">Check the server URL — it should look like https://example.com</string>
     <string name="login_error_failed">Sign-in failed: %1$s</string>
 
     <!-- Tabs. -->
